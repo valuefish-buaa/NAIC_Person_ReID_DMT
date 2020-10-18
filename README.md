@@ -1,18 +1,19 @@
-# NAIC_Person_ReID_Competition
+# NAIC_Person_ReID_Competition For 2020
 
-**This repository contains our source code  for the Person ReID Compitition of NAIC. We are team,DMT, who rank third place in the first season and second place in the second season.**
+**This repository contains our source code  for the 2020 Person ReID Compitition of NAIC. 
+该代码在初赛A榜单排35， B榜单排26**
 
 ## Authors
 
-- [Shuting He](https://github.com/heshuting555)
-- [Hao Luo](https://github.com/michuanhaohao)
-- [Youzhi Gu](https://github.com/shaoniangu)
+- [Chen Baoying](https://github.com/beibuwandeluori)
+- [Zheng Siting](https://github.com/minilionChang)
+- [Song Yusheng](https://github.com/wolkenmeer911)
 
 ## Introduction
 
-Detailed information about the Person ReID Compitition of NAIC can be found [here](https://www.kesci.com/home/competition/5d90401cd8fc4f002da8e7be/content/0).
+Detailed information about the 2020 Person ReID Compitition of NAIC can be found [here](https://www.datafountain.cn/competitions/454).
 
-The code is modified from [reid strong baseline](https://github.com/michuanhaohao/reid-strong-baseline) and [AICITY2020_DMT_VehicleReID](https://github.com/heshuting555/AICITY2020_DMT_VehicleReID)
+The code is modified from [NAIC_Person_ReID_DMT](https://github.com/heshuting555/NAIC_Person_ReID_DMT)
 
 ## Useful Tricks
 
@@ -27,13 +28,15 @@ The code is modified from [reid strong baseline](https://github.com/michuanhaoha
 - [x] Solving UDA through Generating Pseudo Label  
 - [x] Distmat Ensemble
 - [x] FP16
+- [x] Backbones: resnet + efficientnet 
 
-1. Due to the characteristics of the dataset, we find color Jittering can greatly improve model performance. 
+1. Due to the characteristics of the dataset, Luo find color Jittering can greatly improve model performance. 
 2. Luo rewrote Faster Reranking, using the GPU to calculate the distance, and using sparse matrix storage, which can save GPU memory and RAM to meet the organizer's hardware requirements.
-3. Pseudo label is a common trick used in deep learning competitions. We use a trained model to generate pseudo label and add some constraints to get the cleaner label.
-4. We use Ranger optimizer to make the model converge faster and better.
-5. FP16 training can save 30% memory cost and  is 30% faster with no precision drop. Although we didn't have time to try it in this competition, it proved to be a very useful thing in other competitions. Recommend everyone to use. You can refer to [apex](https://github.com/NVIDIA/apex) install it. if you don't have apex installed, please turn-off FP16 training by setting SOLVER.FP16=False 
-
+3. Pseudo label is a common trick used in deep learning competitions. We use a trained model to generate pseudo label and add some constraints to get the cleaner label.( we didn't use)
+4. Luo use Ranger optimizer to make the model converge faster and better.
+5. FP16 training can save 30% memory cost and  is 30% faster with no precision drop. Although we didn't have time to try it in this competition, it proved to be a very useful thing in other competitions. 
+Recommend everyone to use. You can refer to [apex](https://github.com/NVIDIA/apex) install it. if you don't have apex installed, please turn-off FP16 training by setting SOLVER.FP16=False (We didn't use)
+6. We use efficientnet as backbone
 ### Project File Structure
 
 ```
@@ -61,6 +64,7 @@ The code is modified from [reid strong baseline](https://github.com/michuanhaoha
    - torchvision
    - [yacs](https://github.com/rbgirshick/yacs)
    - cv2
+   - efficientnet_pytorch
    
    We use cuda 9.0/python 3.6.7/torch 1.2.0/torchvision 0.4.0 for training and testing.
    

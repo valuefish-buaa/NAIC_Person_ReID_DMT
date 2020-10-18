@@ -48,6 +48,7 @@ _C.MODEL.COS_LAYER = False
 # Frozen layers of backbone
 _C.MODEL.FROZEN = -1
 # Frozen layers of backbone
+_C.MODEL.CBAM = False
 _C.MODEL.POOLING_METHOD = 'avg'
 _C.MODEL.ID_LOSS_TYPE = 'softmax'
 _C.MODEL.ID_LOSS_WEIGHT = 1.0
@@ -84,6 +85,8 @@ _C.DATASETS.NAMES = ('market1501')
 _C.DATASETS.ROOT_DIR = ('../data')
 
 _C.DATASETS.HARD_AUG = False
+_C.DATASETS.ADD_2019 = False
+_C.DATASETS.ALBUMENTATION = False
 # -----------------------------------------------------------------------------
 # DataLoader
 # -----------------------------------------------------------------------------
@@ -101,6 +104,8 @@ _C.DATALOADER.NUM_INSTANCE = 16
 _C.SOLVER = CN()
 # Name of optimizer
 _C.SOLVER.OPTIMIZER_NAME = "Adam"
+# Start epoch
+_C.SOLVER.START_EPOCHS = 0
 # Number of max epoches
 _C.SOLVER.MAX_EPOCHS = 100
 # Base learning rate

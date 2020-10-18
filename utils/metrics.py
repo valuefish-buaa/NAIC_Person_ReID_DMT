@@ -100,7 +100,7 @@ class R1_mAP():
         self.feats.append(feat)
         self.img_name_path.extend(imgpath)
 
-    def compute(self,reranking_parameter=[20,6,0.3]):  # called after each epoch
+    def compute(self,reranking_parameter=[20, 6, 0.3]):  # called after each epoch
         feats = torch.cat(self.feats, dim=0)
         if self.feat_norm:
             print("The test feature is normalized")
@@ -120,12 +120,12 @@ class R1_mAP():
         else:
             print('=> Computing DistMat with cosine similarity')
             distmat = cosine_similarity(qf, gf)
-        print(distmat,'distmat')
+        print(distmat, 'distmat')
         num_q, num_g = distmat.shape
         indices = np.argsort(distmat, axis=1)
         data = dict()
         print(len(g_path), 'self.img_name_q')
-        print(len(q_path),'self.img_name_g')
+        print(len(q_path), 'self.img_name_g')
         for q_idx in range(num_q):
             order = indices[q_idx]  # select one row
             result_query = np.array(g_path)[order[:self.max_rank]]

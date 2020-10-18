@@ -1,5 +1,5 @@
 from PIL import Image, ImageFile
-
+import cv2
 from torch.utils.data import Dataset
 import os.path as osp
 
@@ -64,18 +64,27 @@ class BaseImageDataset(BaseDataset):
 
 
 class ImageDataset(Dataset):
-    def __init__(self, dataset, transform=None):
+    def __init__(self, dataset, transform=None, is_albumentations=False):
         self.dataset = dataset
         self.transform = transform
+        self.is_albumentations = is_albumentations
 
     def __len__(self):
         return len(self.dataset)
 
     def __getitem__(self, index):
         img_path, pid, camid = self.dataset[index]
-        img = read_image(img_path)
+        if self.is_albumentations:
+            img = cv2.imread(img_path)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        else:
+            img = read_image(img_path)
 
         if self.transform is not None:
-            img = self.transform(img)
+            if self.is_albumentations:
+                data = self.transform(image=img)
+                img = data["image"]
+            else:
+                img = self.transform(img)
 
         return img, pid, camid, img_path.split('/')[-1]

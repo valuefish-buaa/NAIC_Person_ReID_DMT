@@ -1,22 +1,20 @@
 MODEL:
   PRETRAIN_CHOICE: 'imagenet'
   PRETRAIN_PATH: ''
-  METRIC_LOSS_TYPE: 'triplet'
+  METRIC_LOSS_TYPE: 'triplet_center'
   IF_LABELSMOOTH: 'on'
-  IF_WITH_CENTER: 'no'
-  NAME: 'resnet101_ibn_b'
-  DEVICE_ID: ('0')
-  ID_LOSS_TYPE: 'arcface'
-  ID_LOSS_WEIGHT: 1.0
-  TRIPLET_LOSS_WEIGHT: 1.0
-  POOLING_METHOD: 'GeM'
+  IF_WITH_CENTER: 'yes'
+  NAME: 'efficientnet-b5'
+  DEVICE_ID: ('5')
+  ID_LOSS_TYPE: 'circle' # cosface arcface  替换不成功
+  ID_LOSS_WEIGHT: 0.1
+  TRIPLET_LOSS_WEIGHT: 0.9
   WEIGHTED_TRIPLET: True
   NO_MARGIN: True
-  THRESH: 0.3
 
 INPUT:
-  SIZE_TRAIN: [384, 192]
-  SIZE_TEST: [384, 192]
+  SIZE_TRAIN: [256, 128]
+  SIZE_TEST: [256, 128]
   PROB: 0.5 # random horizontal flip
   RE_PROB: 0.5 # random erasing
   PADDING: 10
@@ -24,11 +22,13 @@ INPUT:
 DATASETS:
   NAMES: ('naic')
   ROOT_DIR: ('/raid/chenby/person_rID')
+  HARD_AUG: True
+  ADD_2019: True
 
 DATALOADER:
   SAMPLER: 'softmax_triplet'
   NUM_INSTANCE: 8
-  NUM_WORKERS: 8
+  NUM_WORKERS: 4
 
 SOLVER:
   OPTIMIZER_NAME: 'Ranger'
@@ -42,21 +42,21 @@ SOLVER:
   WARMUP_EPOCHS: 10
   WARMUP_METHOD: 'linear'
   LARGE_FC_LR: False
-  CHECKPOINT_PERIOD: 10
+  CHECKPOINT_PERIOD: 5
   LOG_PERIOD: 50
   EVAL_PERIOD: 10000
   COSINE_MARGIN: 0.4
   COSINE_SCALE: 30
-  CENTER_LOSS_WEIGHT: 0.003
+  CENTER_LOSS_WEIGHT: 0.0003
   FP16: False
 
 TEST:
   IMS_PER_BATCH: 128
-  RE_RANKING: True
-  WEIGHT: '../model/0102-b-2/resnet101_ibn_b_50.pth'
-  NECK_FEAT: 'before'
+  RE_RANKING: True  # change 有提升3%
+  WEIGHT: '/data1/cby/py_project/NAIC_Person_ReID_DMT/output/efn-b5_add-2019_circle/efficientnet-b5_45_acc0.5068.pth'
+  NECK_FEAT: 'after' # change 有提升2%
   FEAT_NORM: 'yes'
   FLIP_FEATS: 'on'
-OUTPUT_DIR: "output/0102-b-2/"
+OUTPUT_DIR: "output/efn-b5_add-2019_circle/"
 
 

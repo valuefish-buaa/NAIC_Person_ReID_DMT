@@ -2,11 +2,10 @@ import torch.nn.functional as F
 import logging
 from .softmax_loss import CrossEntropyLabelSmooth
 from .center_loss import CenterLoss
-from .triplet_loss import TripletLoss,WeightedTripletLoss
+from .triplet_loss import TripletLoss, WeightedTripletLoss
 
 
-def make_loss(cfg, num_classes):    # modified by gu
-    feat_dim = 2048
+def make_loss(cfg, num_classes, feat_dim=2048):    # modified by gu
     logger = logging.getLogger("reid_baseline.train")
     if 'triplet' in cfg.MODEL.METRIC_LOSS_TYPE:
         if cfg.MODEL.WEIGHTED_TRIPLET:

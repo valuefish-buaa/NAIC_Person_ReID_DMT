@@ -1,9 +1,9 @@
 import os
 from config import cfg
 import argparse
-from datasets import make_dataloader
+from datasets import make_dataloader, make_dataloader_all
 from model import make_model
-from processor import do_inference
+from processor import do_inference, do_inference_all
 from utils.logger import setup_logger
 
 
@@ -39,13 +39,24 @@ if __name__ == "__main__":
 
     os.environ['CUDA_VISIBLE_DEVICES'] = cfg.MODEL.DEVICE_ID
 
-    train_loader, val_loader_green, val_loader_normal, num_query_green,num_query_normal, num_classes = make_dataloader(cfg)
-    model = make_model(cfg, num_class=num_classes)
-    model.load_param(cfg.TEST.WEIGHT)
+    test_all = True
+    if not test_all:
+        train_loader, val_loader_green, val_loader_normal, num_query_green, num_query_normal, num_classes = make_dataloader(cfg)
+        model = make_model(cfg, num_class=num_classes)
+        model.load_param(cfg.TEST.WEIGHT)
 
-    do_inference(cfg,
-                 model,
-                 val_loader_green,
-                 val_loader_normal,
-                 num_query_green,
-                 num_query_normal)
+        do_inference(cfg,
+                     model,
+                     val_loader_green,
+                     val_loader_normal,
+                     num_query_green,
+                     num_query_normal)
+    else:
+        train_loader, val_loader_query, val_loader_gallery, num_query, num_classes = make_dataloader_all(cfg)
+        model = make_model(cfg, num_class=num_classes)
+        model.load_param(cfg.TEST.WEIGHT)
+        do_inference_all(cfg,
+                         model,
+                         val_loader_query,
+                         val_loader_gallery,
+                         num_query)

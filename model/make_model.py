@@ -1,12 +1,17 @@
 import torch
 import torch.nn as nn
+from efficientnet_pytorch import EfficientNet
+
 from .backbones.resnet import ResNet, BasicBlock, Bottleneck
 from loss.metric_learning import Arcface, Cosface, AMSoftmax, CircleLoss
 from .backbones.resnet_ibn_a import resnet50_ibn_a,resnet101_ibn_a
 from .backbones.se_resnet_ibn_a import se_resnet101_ibn_a
 from .backbones.resnet_ibn_b import resnet101_ibn_b
+from .backbones.CBAM import CBAM
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
+
+
 class GeM(nn.Module):
 
     def __init__(self, p=3.0, eps=1e-6, freeze_p=True):
@@ -26,6 +31,7 @@ class GeM(nn.Module):
         return self.__class__.__name__ +\
                '(' + 'p=' + '{:.4f}'.format(p) +\
                ', ' + 'eps=' + str(self.eps) + ')'
+
 
 def weights_init_kaiming(m):
     classname = m.__class__.__name__
@@ -61,6 +67,8 @@ class Backbone(nn.Module):
         self.cos_layer = cfg.MODEL.COS_LAYER
         self.neck = cfg.MODEL.NECK
         self.neck_feat = cfg.TEST.NECK_FEAT
+        self.model_name = model_name
+        self.use_cbam = cfg.MODEL.CBAM
 
         if model_name == 'resnet50':
             self.in_planes = 2048
@@ -84,12 +92,20 @@ class Backbone(nn.Module):
             self.in_planes = 2048
             self.base = resnet101_ibn_b(last_stride)
             print('using resnet101_ibn_b as a backbone')
+        elif 'efficientnet' in model_name:
+            self.base = EfficientNet.from_pretrained(model_name)
+            print('using {} as a backbone'.format(model_name))
+            self.in_planes = self.base._fc.in_features
+            # print(self.base._fc.in_features)
         else:
             print('unsupported backbone! but got {}'.format(model_name))
 
-        if pretrain_choice == 'imagenet':
+        if pretrain_choice == 'imagenet' and 'efficientnet' not in model_name:
             self.base.load_param(model_path)
             print('Loading pretrained ImageNet model......from {}'.format(model_path))
+
+        if cfg.MODEL.CBAM:
+            self.cbam = CBAM(channel=self.in_planes)
 
         if cfg.MODEL.POOLING_METHOD == 'GeM':
             print('using GeM pooling')
@@ -114,7 +130,7 @@ class Backbone(nn.Module):
         elif self.ID_LOSS_TYPE == 'circle':
             print('using {} with s:{}, m: {}'.format(self.ID_LOSS_TYPE,cfg.SOLVER.COSINE_SCALE,cfg.SOLVER.COSINE_MARGIN))
             self.classifier = CircleLoss(self.in_planes, self.num_classes,
-                                        s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
+                                         s=cfg.SOLVER.COSINE_SCALE, m=cfg.SOLVER.COSINE_MARGIN)
         else:
             self.classifier = nn.Linear(self.in_planes, self.num_classes, bias=False)
             self.classifier.apply(weights_init_classifier)
@@ -124,7 +140,15 @@ class Backbone(nn.Module):
         self.bottleneck.apply(weights_init_kaiming)
 
     def forward(self, x, label=None):  # label is unused if self.cos_layer == 'no'
-        x = self.base(x)
+        if 'efficientnet' in self.model_name:
+            x = self.base.extract_features(x)
+            # print(x.size())
+        else:
+            x = self.base(x)
+
+        if self.use_cbam:
+            x = self.cbam(x)
+
         global_feat = self.gap(x)
         global_feat = global_feat.view(global_feat.shape[0], -1)  # flatten to (bs, 2048)
         feat = self.bottleneck(global_feat)
@@ -163,6 +187,16 @@ class Backbone(nn.Module):
             self.state_dict()[i].copy_(param_dict[i])
         print('Loading pretrained model for finetuning from {}'.format(model_path))
 
+
 def make_model(cfg, num_class):
     model = Backbone(num_class, cfg)
     return model
+
+
+def get_efficientnet(model_name='efficientnet-b0', num_class=2):
+    net = EfficientNet.from_pretrained(model_name)
+    # net = EfficientNet.from_name(model_name)
+    in_features = net._fc.in_features
+    net._fc = nn.Linear(in_features=in_features, out_features=num_class, bias=True)
+
+    return net

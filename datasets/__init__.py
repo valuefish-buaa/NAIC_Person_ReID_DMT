@@ -1,2 +1,2 @@
-from .make_dataloader import  make_dataloader,make_dataloader_Pseudo
+from .make_dataloader import make_dataloader, make_dataloader_all, make_dataloader_val, make_dataloader_Pseudo
 from .make_dataloader import RandomErasing
